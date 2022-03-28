@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.MessageListener;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -21,7 +25,7 @@ import ust.tad.plugintemplate.analysistask.AnalysisTaskStartRequestReceiver;
 
 @Component
 public class PluginRegistrationRunner implements ApplicationRunner{
-
+    
     private static final Logger LOG =
       LoggerFactory.getLogger(PluginRegistrationRunner.class);
 
@@ -30,6 +34,12 @@ public class PluginRegistrationRunner implements ApplicationRunner{
 
     @Autowired
     private WebClient pluginRegistrationApiClient;
+
+    @Autowired
+    private RabbitAdmin rabbitAdmin;
+
+    @Autowired
+    private AnalysisTaskStartRequestReceiver analysisTaskStartRequestReceiver;
 
     @Value("${plugin.technology}")
     private String pluginTechnology;
@@ -57,12 +67,13 @@ public class PluginRegistrationRunner implements ApplicationRunner{
             .block();
 
         LOG.info("Received response: " + response.toString());
+        
+        AbstractMessageListenerContainer requestQueueListener =  createListenerForRequestQueue(
+            response.getRequestQueueName(), 
+            message -> analysisTaskStartRequestReceiver.receiveAnalysisTaskStartRequest(message));
 
-        //register rabbitlistener to requestqueue
-        //context.registerBean(AnalysisTaskStartRequestReceiver.class, 
-         //   () -> new AnalysisTaskStartRequestReceiver(response.getRequestQueueName()));
+        context.registerBean("requestQueueListener", requestQueueListener.getClass(), requestQueueListener);
 
-        //register bean with response exchange
         context.registerBean(responseExchangeName, DirectExchange.class, 
             () -> new DirectExchange(response.getResponseExchangeName(), true, false));
     }
@@ -73,6 +84,15 @@ public class PluginRegistrationRunner implements ApplicationRunner{
         plugin.put("technology", pluginTechnology);
         plugin.put("analysisType", pluginAnalysisType);
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(plugin);
+    }
+
+    private AbstractMessageListenerContainer createListenerForRequestQueue(String requestQueueName, MessageListener messageListener) {
+        SimpleMessageListenerContainer listener = new SimpleMessageListenerContainer(rabbitAdmin.getRabbitTemplate().getConnectionFactory());
+        listener.addQueueNames(requestQueueName);
+        listener.setMessageListener(messageListener);
+        listener.start();
+    
+        return listener;
     }
     
 }
