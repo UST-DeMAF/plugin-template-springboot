@@ -21,14 +21,20 @@ public class AnalysisTaskResponseSender {
     private String responseExchangeName;
 
     
-    public void send(AnalysisTaskResponse analysisTaskResponse) throws JsonProcessingException {
-
+    public void send(AnalysisTaskResponse analysisTaskResponse)  {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        Message message = MessageBuilder.withBody(objectMapper.writeValueAsString(analysisTaskResponse).getBytes())
-            .setContentType(MessageProperties.CONTENT_TYPE_JSON)
-            .build();
-            
+        Message message;
+        try {
+            message = MessageBuilder
+                .withBody(objectMapper.writeValueAsString(analysisTaskResponse).getBytes())
+                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                .setHeader("formatIndicator", "AnalysisTaskResponse")
+                .build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }            
         template.convertAndSend(responseExchangeName, "", message);  
     }
 

@@ -21,8 +21,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import ust.tad.plugintemplate.analysistask.AnalysisTaskStartRequestReceiver;
+import ust.tad.plugintemplate.analysistask.AnalysisTaskReceiver;
 
+/**
+ * Runner that is executed at application startup to register this plugin at the Analysis Manager.
+ */
 @Component
 public class PluginRegistrationRunner implements ApplicationRunner{
     
@@ -39,7 +42,7 @@ public class PluginRegistrationRunner implements ApplicationRunner{
     private RabbitAdmin rabbitAdmin;
 
     @Autowired
-    private AnalysisTaskStartRequestReceiver analysisTaskStartRequestReceiver;
+    private AnalysisTaskReceiver analysisTaskReceiver;
 
     @Value("${plugin.technology}")
     private String pluginTechnology;
@@ -68,9 +71,9 @@ public class PluginRegistrationRunner implements ApplicationRunner{
 
         LOG.info("Received response: " + response.toString());
         
-        AbstractMessageListenerContainer requestQueueListener =  createListenerForRequestQueue(
+        AbstractMessageListenerContainer requestQueueListener = createListenerForRequestQueue(
             response.getRequestQueueName(), 
-            message -> analysisTaskStartRequestReceiver.receiveAnalysisTaskStartRequest(message));
+            message -> analysisTaskReceiver.receive(message));
 
         context.registerBean("requestQueueListener", requestQueueListener.getClass(), requestQueueListener);
 

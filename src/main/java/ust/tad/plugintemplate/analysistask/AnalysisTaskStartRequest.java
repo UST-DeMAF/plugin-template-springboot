@@ -4,28 +4,31 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AnalysisTaskStartRequest {
 
+    @JsonProperty("taskId")
     private UUID taskId;
 
+    @JsonProperty("transformationProcessId")
     private UUID transformationProcessId;
 
-    private String technology;
-
-    private String analysisType;
-
+    @JsonProperty("commands")
     private List<String> commands;
+
+    @JsonProperty("locations")
+    private List<Location> locations;
 
 
     public AnalysisTaskStartRequest() {
     }
 
-    public AnalysisTaskStartRequest(UUID taskId, UUID transformationProcessId, String technology, String analysisType, List<String> commands) {
+    public AnalysisTaskStartRequest(UUID taskId, UUID transformationProcessId, List<String> commands, List<Location> locations) {
         this.taskId = taskId;
         this.transformationProcessId = transformationProcessId;
-        this.technology = technology;
-        this.analysisType = analysisType;
         this.commands = commands;
+        this.locations = locations;
     }
 
     public UUID getTaskId() {
@@ -44,28 +47,20 @@ public class AnalysisTaskStartRequest {
         this.transformationProcessId = transformationProcessId;
     }
 
-    public String getTechnology() {
-        return this.technology;
-    }
-
-    public void setTechnology(String technology) {
-        this.technology = technology;
-    }
-
-    public String getAnalysisType() {
-        return this.analysisType;
-    }
-
-    public void setAnalysisType(String analysisType) {
-        this.analysisType = analysisType;
-    }
-
     public List<String> getCommands() {
         return this.commands;
     }
 
     public void setCommands(List<String> commands) {
         this.commands = commands;
+    }
+
+    public List<Location> getLocations() {
+        return this.locations;
+    }
+
+    public void setLocations(List<Location> locations) {
+        this.locations = locations;
     }
 
     public AnalysisTaskStartRequest taskId(UUID taskId) {
@@ -78,18 +73,13 @@ public class AnalysisTaskStartRequest {
         return this;
     }
 
-    public AnalysisTaskStartRequest technology(String technology) {
-        setTechnology(technology);
-        return this;
-    }
-
-    public AnalysisTaskStartRequest analysisType(String analysisType) {
-        setAnalysisType(analysisType);
-        return this;
-    }
-
     public AnalysisTaskStartRequest commands(List<String> commands) {
         setCommands(commands);
+        return this;
+    }
+
+    public AnalysisTaskStartRequest locations(List<Location> locations) {
+        setLocations(locations);
         return this;
     }
 
@@ -101,12 +91,12 @@ public class AnalysisTaskStartRequest {
             return false;
         }
         AnalysisTaskStartRequest analysisTaskStartRequest = (AnalysisTaskStartRequest) o;
-        return Objects.equals(taskId, analysisTaskStartRequest.taskId) && Objects.equals(transformationProcessId, analysisTaskStartRequest.transformationProcessId) && Objects.equals(technology, analysisTaskStartRequest.technology) && Objects.equals(analysisType, analysisTaskStartRequest.analysisType) && Objects.equals(commands, analysisTaskStartRequest.commands);
+        return Objects.equals(taskId, analysisTaskStartRequest.taskId) && Objects.equals(transformationProcessId, analysisTaskStartRequest.transformationProcessId) && Objects.equals(commands, analysisTaskStartRequest.commands) && Objects.equals(locations, analysisTaskStartRequest.locations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(taskId, transformationProcessId, technology, analysisType, commands);
+        return Objects.hash(taskId, transformationProcessId, commands, locations);
     }
 
     @Override
@@ -114,9 +104,8 @@ public class AnalysisTaskStartRequest {
         return "{" +
             " taskId='" + getTaskId() + "'" +
             ", transformationProcessId='" + getTransformationProcessId() + "'" +
-            ", technology='" + getTechnology() + "'" +
-            ", analysisType='" + getAnalysisType() + "'" +
             ", commands='" + getCommands() + "'" +
+            ", locations='" + getLocations() + "'" +
             "}";
     }
 
