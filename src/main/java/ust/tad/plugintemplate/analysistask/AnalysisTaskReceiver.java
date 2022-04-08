@@ -10,6 +10,8 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ust.tad.plugintemplate.analysis.AnalysisService;
+
 @Service
 public class AnalysisTaskReceiver {
 
@@ -21,6 +23,9 @@ public class AnalysisTaskReceiver {
 
     @Autowired
     private AnalysisTaskResponseSender analysisTaskResponseSender;
+
+    @Autowired
+    private AnalysisService analysisService;
 
     /**
      * Receives a message from the analysis task request queue.
@@ -62,7 +67,11 @@ public class AnalysisTaskReceiver {
             AnalysisTaskStartRequest.class);
 
         LOG.info(String.format("received AnalysisTaskStartRequest: %s", analysisTaskStartRequest.toString()));
-        //TODO start analysis process
+        analysisService.startAnalysis(
+            analysisTaskStartRequest.getTaskId(), 
+            analysisTaskStartRequest.getTransformationProcessId(), 
+            analysisTaskStartRequest.getCommands(), 
+            analysisTaskStartRequest.getLocations());
     }
 
     /**
@@ -85,10 +94,7 @@ public class AnalysisTaskReceiver {
      * Creates and sends an AnalysisTaskResponse containing an error message.
      */
     private void respondWithErrorMessage(String errorMessage) {
-        AnalysisTaskResponse analysisTaskResponse = new AnalysisTaskResponse();
-        analysisTaskResponse.setSuccess(false);
-        analysisTaskResponse.setErrorMessage(errorMessage);
-        analysisTaskResponseSender.send(analysisTaskResponse);
+        analysisTaskResponseSender.sendFailureResponse(null, errorMessage);
     }
 
 }

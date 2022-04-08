@@ -15,5 +15,13 @@ public class WebClientConfig {
 	public WebClient pluginRegistrationApiClient() {
 		return WebClient.create(pluginRegistrationURI);
 	}
+
+	@Value("${models-service.url}")
+    private String modelsServiceURL;
+
+	@Bean
+	public WebClient modelsServiceApiClient() {
+		return WebClient.create(modelsServiceURL);
+	}
     
 }

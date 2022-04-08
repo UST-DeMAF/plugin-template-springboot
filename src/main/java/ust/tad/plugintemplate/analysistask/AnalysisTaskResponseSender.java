@@ -1,5 +1,7 @@
 package ust.tad.plugintemplate.analysistask;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,8 +23,12 @@ public class AnalysisTaskResponseSender {
     private String responseExchangeName;
 
     
-    public void send(AnalysisTaskResponse analysisTaskResponse)  {
+    public void sendSuccessResponse(UUID taskId)  {
         ObjectMapper objectMapper = new ObjectMapper();
+
+        AnalysisTaskResponse analysisTaskResponse = new AnalysisTaskResponse();
+        analysisTaskResponse.setTaskId(taskId);
+        analysisTaskResponse.setSuccess(true);        
 
         Message message;
         try {
@@ -30,6 +36,47 @@ public class AnalysisTaskResponseSender {
                 .withBody(objectMapper.writeValueAsString(analysisTaskResponse).getBytes())
                 .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                 .setHeader("formatIndicator", "AnalysisTaskResponse")
+                .build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }            
+        template.convertAndSend(responseExchangeName, "", message);  
+    }
+
+    public void sendFailureResponse(UUID taskId, String errorMessage)  {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        AnalysisTaskResponse analysisTaskResponse = new AnalysisTaskResponse();
+        if(taskId != null) {
+            analysisTaskResponse.setTaskId(taskId);
+        }
+        analysisTaskResponse.setSuccess(false);      
+        analysisTaskResponse.setErrorMessage(errorMessage);  
+
+        Message message;
+        try {
+            message = MessageBuilder
+                .withBody(objectMapper.writeValueAsString(analysisTaskResponse).getBytes())
+                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                .setHeader("formatIndicator", "AnalysisTaskResponse")
+                .build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return;
+        }            
+        template.convertAndSend(responseExchangeName, "", message);  
+    }
+
+    public void sendEmbeddedDeploymentModelAnalysisRequest(EmbeddedDeploymentModelAnalysisRequest request)  {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        Message message;
+        try {
+            message = MessageBuilder
+                .withBody(objectMapper.writeValueAsString(request).getBytes())
+                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                .setHeader("formatIndicator", "EmbeddedDeploymentModelAnalysisRequest")
                 .build();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
