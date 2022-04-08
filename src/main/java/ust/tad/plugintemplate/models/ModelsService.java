@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import ust.tad.plugintemplate.models.tadm.annotatedentities.AnnotatedDeploymentModel;
@@ -21,7 +22,7 @@ public class ModelsService {
     private String modelsServiceURL;
 
     /**
-     * Retrive a technology-specific deployment model from the model service.
+     * Retrieve a technology-specific deployment model from the model service.
      * 
      * @param transformationProcessId
      * @return
@@ -38,7 +39,21 @@ public class ModelsService {
     }
 
     /**
-     * Retrive a technology-agnostic deployment model from the model service.
+     * Update a technology-specific deployment model by sending it to the update endpoint of the models service.
+     * 
+     * @param annotatedDeploymentModel
+     */
+    public void updateTechnologySpecificDeploymentModel(TechnologySpecificDeploymentModel technologySpecificDeploymentModel) {
+        modelsServiceApiClient.post()
+            .uri("/technology-specific")
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(technologySpecificDeploymentModel))
+            .retrieve();
+    }
+
+    /**
+     * Retrieve a technology-agnostic deployment model from the model service.
      * 
      * @param transformationProcessId
      * @return
@@ -52,5 +67,19 @@ public class ModelsService {
             .retrieve()
             .bodyToMono(AnnotatedDeploymentModel.class)
             .block();
+    }
+
+    /**
+     * Update a technology-agnostic deployment model by sending it to the update endpoint of the models service.
+     * 
+     * @param annotatedDeploymentModel
+     */
+    public void updateTechnologyAgnosticDeploymentModel(AnnotatedDeploymentModel annotatedDeploymentModel) {
+        modelsServiceApiClient.post()
+            .uri("/technology-agnostic")
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(annotatedDeploymentModel))
+            .retrieve();
     }
 }

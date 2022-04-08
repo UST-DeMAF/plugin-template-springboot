@@ -18,9 +18,6 @@ import ust.tad.plugintemplate.models.tsdm.TechnologySpecificDeploymentModel;
 
 @Service
 public class AnalysisService {
-    
-    private static final Logger LOG =
-      LoggerFactory.getLogger(AnalysisService.class);
 
     @Autowired
     ModelsService modelsService;
@@ -45,13 +42,13 @@ public class AnalysisService {
     public void startAnalysis(UUID taskId, UUID transformationProcessId, List<String> commands, List<Location> locations) {
 
         TechnologySpecificDeploymentModel tsdm = modelsService.getTechnologySpecificDeploymentModel(transformationProcessId);
-        LOG.info(tsdm.toString());
         AnnotatedDeploymentModel tadm = modelsService.getTechnologyAgnosticDeploymentModel(transformationProcessId);
-        LOG.info(tadm.toString());
 
         List<EmbeddedDeploymentModelAnalysisRequest> embeddedDeploymentModels = new ArrayList<>();
 
         //TODO Analysis and Transformation Logic goes here
+
+        updateDeploymentModels(tsdm, tadm);
 
         if(embeddedDeploymentModels.isEmpty()) {
             analysisTaskResponseSender.sendSuccessResponse(taskId);
@@ -60,6 +57,11 @@ public class AnalysisService {
                 analysisTaskResponseSender.sendEmbeddedDeploymentModelAnalysisRequest(embeddedDeploymentModel);
             }
         }
+    }
+
+    private void updateDeploymentModels(TechnologySpecificDeploymentModel tsdm, AnnotatedDeploymentModel tadm) {
+        modelsService.updateTechnologySpecificDeploymentModel(tsdm);
+        modelsService.updateTechnologyAgnosticDeploymentModel(tadm);
     }
 
     
