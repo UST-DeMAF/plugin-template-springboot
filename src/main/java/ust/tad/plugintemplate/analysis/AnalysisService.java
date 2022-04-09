@@ -1,14 +1,14 @@
 package ust.tad.plugintemplate.analysis;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ust.tad.plugintemplate.analysistask.AnalysisTaskResponseSender;
-import ust.tad.plugintemplate.analysistask.EmbeddedDeploymentModelAnalysisRequest;
 import ust.tad.plugintemplate.analysistask.Location;
 import ust.tad.plugintemplate.models.ModelsService;
 import ust.tad.plugintemplate.models.tadm.annotatedentities.AnnotatedDeploymentModel;
@@ -22,10 +22,16 @@ public class AnalysisService {
 
     @Autowired
     AnalysisTaskResponseSender analysisTaskResponseSender;
+    
+    private TechnologySpecificDeploymentModel tsdm;
+
+    private AnnotatedDeploymentModel tadm;
+
+    private Set<Integer> newEmbeddedDeploymentModelIndexes = new HashSet<>();
 
     /**
      * Start the analysis of the deployment model.
-     * 1. Retrieve deployment models from models service
+     * 1. Retrieve internal deployment models from models service
      * 2. Parse in technology-specific deployment model from locations
      * 3. Update tsdm with new information
      * 4. Transform to EDMM entities and update tadm
@@ -38,23 +44,32 @@ public class AnalysisService {
      * @param locations
      */
     public void startAnalysis(UUID taskId, UUID transformationProcessId, List<String> commands, List<Location> locations) {
+        this.tsdm = modelsService.getTechnologySpecificDeploymentModel(transformationProcessId);
+        this.tadm = modelsService.getTechnologyAgnosticDeploymentModel(transformationProcessId);
 
-        TechnologySpecificDeploymentModel tsdm = modelsService.getTechnologySpecificDeploymentModel(transformationProcessId);
-        AnnotatedDeploymentModel tadm = modelsService.getTechnologyAgnosticDeploymentModel(transformationProcessId);
+        try {
+            runAnalysis();
+        } catch (Exception e) { //TODO change to more specific Exception classes
+            e.printStackTrace();
+            analysisTaskResponseSender.sendFailureResponse(taskId, e.getClass()+": "+e.getMessage());
+            return;
+        }
 
-        List<EmbeddedDeploymentModelAnalysisRequest> embeddedDeploymentModels = new ArrayList<>();
+        updateDeploymentModels(this.tsdm, this.tadm);
 
-        //TODO Analysis and Transformation Logic goes here
-
-        updateDeploymentModels(tsdm, tadm);
-
-        if(embeddedDeploymentModels.isEmpty()) {
+        if(newEmbeddedDeploymentModelIndexes.isEmpty()) {
             analysisTaskResponseSender.sendSuccessResponse(taskId);
         } else {
-            for(EmbeddedDeploymentModelAnalysisRequest embeddedDeploymentModel : embeddedDeploymentModels) {
-                analysisTaskResponseSender.sendEmbeddedDeploymentModelAnalysisRequest(embeddedDeploymentModel);
+            for (int index : newEmbeddedDeploymentModelIndexes) {
+                analysisTaskResponseSender.sendEmbeddedDeploymentModelAnalysisRequestFromModel(
+                    this.tsdm.getEmbeddedDeploymentModels().get(index), taskId); 
             }
+            analysisTaskResponseSender.sendSuccessResponse(taskId);
         }
+    }
+
+    private void runAnalysis() {
+        //TODO Analysis and Transformation Logic goes here
     }
 
     private void updateDeploymentModels(TechnologySpecificDeploymentModel tsdm, AnnotatedDeploymentModel tadm) {

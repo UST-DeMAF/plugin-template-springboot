@@ -1,5 +1,7 @@
 package ust.tad.plugintemplate.analysistask;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,6 +14,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import ust.tad.plugintemplate.models.tsdm.DeploymentModelContent;
+import ust.tad.plugintemplate.models.tsdm.Line;
+import ust.tad.plugintemplate.models.tsdm.TechnologySpecificDeploymentModel;
 
 @Service
 public class AnalysisTaskResponseSender {
@@ -84,5 +90,33 @@ public class AnalysisTaskResponseSender {
         }            
         template.convertAndSend(responseExchangeName, "", message);  
     }
+
+    public void sendEmbeddedDeploymentModelAnalysisRequestFromModel(TechnologySpecificDeploymentModel embeddedDeploymentModel, UUID parentTaskId)  {
+        EmbeddedDeploymentModelAnalysisRequest request = new EmbeddedDeploymentModelAnalysisRequest();
+        request.setParentTaskId(parentTaskId);
+        request.setTechnology(embeddedDeploymentModel.getTechnology());
+        request.setCommands(embeddedDeploymentModel.getCommands());
+        List<Location> locations = new ArrayList<>();
+        for (DeploymentModelContent deploymentModelContent : embeddedDeploymentModel.getContent()) {
+            Location location = new Location();
+            location.setUrl(deploymentModelContent.getLocation());
+            int startLineNumber = 0;
+            int endLineNumber = 0;
+            for (Line line : deploymentModelContent.getLines()) {
+                if (line.getNumber() < startLineNumber) {
+                    startLineNumber = line.getNumber();
+                } else if (line.getNumber() > endLineNumber) {
+                    endLineNumber = line.getNumber();
+                }
+            }
+            location.setStartLineNumber(startLineNumber);
+            location.setEndLineNumber(endLineNumber);
+            locations.add(location);
+        }
+        request.setLocations(locations);
+        
+        sendEmbeddedDeploymentModelAnalysisRequest(request);
+    }
+
 
 }

@@ -35,7 +35,7 @@ public class AnalysisTaskReceiver {
      * @throws JsonProcessingException
      */
     public void receive(Message message) {     
-        try {
+        if(message.getMessageProperties().getHeader("formatIndicator") != null) {
             switch (message.getMessageProperties().getHeader("formatIndicator").toString()) {
                 case "AnalysisTaskStartRequest":
                     receiveAnalysisTaskStartRequest(message);
@@ -47,7 +47,7 @@ public class AnalysisTaskReceiver {
                     respondWithErrorMessage("Could not process message: Unknown format of request message.");
                     break;
             }   
-        } catch (NullPointerException e) {
+        } else {
             respondWithErrorMessage("Could not process message: Header with formatIndicator missing.");
         }                   
     }
