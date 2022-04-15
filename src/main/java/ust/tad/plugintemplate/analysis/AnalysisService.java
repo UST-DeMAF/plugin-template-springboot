@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import ust.tad.plugintemplate.analysistask.AnalysisTaskResponseSender;
 import ust.tad.plugintemplate.analysistask.Location;
 import ust.tad.plugintemplate.models.ModelsService;
-import ust.tad.plugintemplate.models.tadm.annotatedentities.AnnotatedDeploymentModel;
+import ust.tad.plugintemplate.models.tadm.TechnologyAgnosticDeploymentModel;
 import ust.tad.plugintemplate.models.tsdm.TechnologySpecificDeploymentModel;
 
 @Service
@@ -25,7 +25,7 @@ public class AnalysisService {
     
     private TechnologySpecificDeploymentModel tsdm;
 
-    private AnnotatedDeploymentModel tadm;
+    private TechnologyAgnosticDeploymentModel tadm;
 
     private Set<Integer> newEmbeddedDeploymentModelIndexes = new HashSet<>();
 
@@ -72,7 +72,7 @@ public class AnalysisService {
         //TODO Analysis and Transformation Logic goes here
     }
 
-    private void updateDeploymentModels(TechnologySpecificDeploymentModel tsdm, AnnotatedDeploymentModel tadm) {
+    private void updateDeploymentModels(TechnologySpecificDeploymentModel tsdm, TechnologyAgnosticDeploymentModel tadm) {
         modelsService.updateTechnologySpecificDeploymentModel(tsdm);
         modelsService.updateTechnologyAgnosticDeploymentModel(tadm);
     }

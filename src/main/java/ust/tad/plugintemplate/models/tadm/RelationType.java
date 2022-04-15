@@ -1,4 +1,4 @@
-package ust.tad.plugintemplate.models.tadm.entities;
+package ust.tad.plugintemplate.models.tadm;
 
 import java.util.List;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package ust.tad.plugintemplate.models.tadm.entities;
+package ust.tad.plugintemplate.models.tadm;
 
 public enum PropertyType {
     BOOLEAN,

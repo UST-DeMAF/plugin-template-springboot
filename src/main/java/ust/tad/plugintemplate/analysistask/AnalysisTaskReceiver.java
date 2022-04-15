@@ -39,10 +39,7 @@ public class AnalysisTaskReceiver {
             switch (message.getMessageProperties().getHeader("formatIndicator").toString()) {
                 case "AnalysisTaskStartRequest":
                     receiveAnalysisTaskStartRequest(message);
-                    break;
-                case "AnalysisTaskResumeRequest":
-                    receiveAnalysisTaskResumeRequest(message);
-                    break;        
+                    break;   
                 default:
                     respondWithErrorMessage("Could not process message: Unknown format of request message.");
                     break;
@@ -72,22 +69,6 @@ public class AnalysisTaskReceiver {
             analysisTaskStartRequest.getTransformationProcessId(), 
             analysisTaskStartRequest.getCommands(), 
             analysisTaskStartRequest.getLocations());
-    }
-
-    /**
-     * Receives a message of type AnalysisTaskResumeRequest.
-     * Transforms the message into an entity of type AnalysisTaskResumeRequest.
-     * Resumes the analysis process of the plugin.
-     * 
-     * @param message
-     */
-    private void receiveAnalysisTaskResumeRequest(Message message) {
-        ObjectMapper mapper = new ObjectMapper();
-        AnalysisTaskResumeRequest analysisTaskResumeRequest = mapper.convertValue(
-            jsonMessageConverter.fromMessage(message), 
-            AnalysisTaskResumeRequest.class);
-        LOG.info(String.format("received AnalysisTaskResumeRequest: %s", analysisTaskResumeRequest.toString()));
-        //TODO resume analysis process
     }
 
     /**
