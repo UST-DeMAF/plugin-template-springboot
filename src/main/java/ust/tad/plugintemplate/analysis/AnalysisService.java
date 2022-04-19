@@ -18,10 +18,10 @@ import ust.tad.plugintemplate.models.tsdm.TechnologySpecificDeploymentModel;
 public class AnalysisService {
 
     @Autowired
-    ModelsService modelsService;
+    private ModelsService modelsService;
 
     @Autowired
-    AnalysisTaskResponseSender analysisTaskResponseSender;
+    private AnalysisTaskResponseSender analysisTaskResponseSender;
     
     private TechnologySpecificDeploymentModel tsdm;
 
